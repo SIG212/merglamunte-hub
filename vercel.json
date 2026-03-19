@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/vreme-munte/(.*)", "destination": "/vreme-munte/$1" },
+    { "source": "/vreme-munte", "destination": "/vreme-munte/index.html" }
+  ]
+}
