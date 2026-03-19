@@ -1,0 +1,81 @@
+name: Build & Deploy Hub
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repo-ul hub (acesta) — include public/index.html
+      - name: Checkout hub repo
+        uses: actions/checkout@v4
+
+      # 2. Setup Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3. Checkout merglamunte2 și build React
+      - name: Checkout merglamunte2
+        uses: actions/checkout@v4
+        with:
+          repository: SIG212/merglamunte2
+          path: merglamunte2
+
+      - name: Install & build merglamunte2
+        working-directory: merglamunte2
+        run: |
+          npm ci
+          npm run build
+
+      # 4. Checkout scraper-trasee
+      - name: Checkout scraper-trasee
+        uses: actions/checkout@v4
+        with:
+          repository: SIG212/scraper-trasee
+          path: scraper-trasee
+
+      # 5. Checkout avalansa
+      - name: Checkout avalansa
+        uses: actions/checkout@v4
+        with:
+          repository: SIG212/avalansa
+          path: avalansa
+
+      # 6. Asamblează dist/
+      - name: Assemble dist
+        run: |
+          mkdir -p dist
+
+          # Pivot page la root
+          cp public/index.html dist/index.html
+
+          # App React la /vreme-munte/
+          mkdir -p dist/vreme-munte
+          cp -r merglamunte2/dist/. dist/vreme-munte/
+
+          # Fișiere scraper-trasee
+          cp scraper-trasee/generator.html dist/generator.html
+          cp scraper-trasee/trasee.json dist/trasee.json
+
+          # Fișier avalansa
+          cp avalansa/autoevaluator-avalansa.html dist/autoevaluator-avalansa.html
+
+          # vercel.json în dist
+          cp vercel.json dist/vercel.json
+
+      # 7. Upload artifact
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # 8. Trigger Vercel deploy hook (adaugă VERCEL_DEPLOY_HOOK în repo secrets)
+      - name: Trigger Vercel deploy
+        run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
