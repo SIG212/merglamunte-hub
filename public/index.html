@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MergLaMunte — Planifică-ți aventura în munte</title>
+<meta name="description" content="Generator de trasee, meteo montan, calculator risc avalanșă și comunitate pentru drumeții în România.">
+<link rel="preconnect" href="https://fonts.bunny.net">
+<link href="https://fonts.bunny.net/css?family=bricolage-grotesque:300,400,500,600,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --g9: #0a2e1a;
+    --g8: #0f3d22;
+    --g7: #145c32;
+    --g5: #1e8a4a;
+    --g3: #5bb87a;
+    --g1: #d6f0df;
+    --cream: #f5f0e8;
+    --stone: #e2d9cc;
+    --stone2: #cfc4b4;
+    --ink: #1a1612;
+    --ink2: #5a5248;
+    --ink3: #9a9088;
+    --white: #fff;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Geist Sans', 'Geist', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--g9);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 54px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .logo {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: -0.03em;
+    text-decoration: none;
+  }
+  .logo em { font-style: italic; color: var(--g3); }
+  .nav-tag {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.05em;
+  }
+  @media(max-width:480px){ .nav-tag { display:none; } }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--g9);
+    padding: 64px 24px 100px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  /* subtle radial glow */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 65% 55% at 50% 115%, rgba(30,138,74,0.22) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  /* mountain silhouette cutout into cream */
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 68px;
+    background: var(--cream);
+    clip-path: polygon(
+      0 100%,
+      0 65%,
+      6% 30%,
+      13% 58%,
+      20% 18%,
+      28% 50%,
+      35% 8%,
+      43% 52%,
+      50% 22%,
+      57% 48%,
+      65% 5%,
+      72% 42%,
+      80% 20%,
+      88% 55%,
+      94% 32%,
+      100% 60%,
+      100% 100%
+    );
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    display: inline-block;
+    background: rgba(91,184,122,0.12);
+    border: 1px solid rgba(91,184,122,0.22);
+    border-radius: 100px;
+    padding: 4px 16px;
+    font-family: 'Geist Sans', 'Geist', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--g3);
+    margin-bottom: 22px;
+  }
+
+  .hero h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: clamp(2.4rem, 7vw, 4.2rem);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 18px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--g3);
+  }
+
+  .hero-sub {
+    font-size: 15px;
+    color: rgba(214,240,223,0.55);
+    line-height: 1.7;
+    max-width: 420px;
+    margin: 0 auto 64px;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards-section {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  @media(max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--stone);
+    padding: 28px 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    box-shadow: 0 2px 12px rgba(26,22,18,0.06);
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(26,22,18,0.12);
+    border-color: var(--stone2);
+  }
+  .card:active { transform: translateY(-2px); }
+
+  /* colored top accent line */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card:hover::before { opacity: 1; }
+  .card-green::before  { background: linear-gradient(90deg, var(--g7), var(--g3)); }
+  .card-teal::before   { background: linear-gradient(90deg, #0f6e6e, #3bbfbf); }
+  .card-muted::before  { background: linear-gradient(90deg, var(--stone2), var(--stone)); }
+  .card-blue::before   { background: linear-gradient(90deg, #1a3a5c, #4a7ab5); }
+
+  /* card disabled state */
+  .card-disabled {
+    cursor: default;
+    pointer-events: none;
+  }
+  .card-disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 12px rgba(26,22,18,0.06);
+    border-color: var(--stone);
+  }
+
+  .card-icon {
+    font-size: 32px;
+    line-height: 1;
+    margin-bottom: 18px;
+    display: block;
+  }
+
+  .card-question {
+    font-family: 'Geist Sans', 'Geist', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink3);
+    margin-bottom: 6px;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .card-title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .card-title em {
+    font-style: normal;
+    color: var(--g7);
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--ink3);
+    line-height: 1.6;
+    flex: 1;
+    margin-bottom: 20px;
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .tag-green  { background: var(--g1); color: var(--g7); }
+  .tag-teal   { background: #d0f0f0; color: #0a5555; }
+  .tag-muted  { background: var(--stone); color: var(--ink3); }
+  .tag-blue   { background: #dce8f5; color: #1a3a5c; }
+
+  .card-arrow {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1px solid var(--stone);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--ink3);
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .card:hover .card-arrow {
+    background: var(--g7);
+    color: #fff;
+    border-color: var(--g7);
+    transform: translateX(3px);
+  }
+  .card-disabled .card-arrow {
+    opacity: 0;
+  }
+
+  /* coming soon badge */
+  .coming-soon {
+    position: absolute;
+    top: 18px; right: 18px;
+    background: var(--stone);
+    color: var(--ink3);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--g9);
+    color: rgba(214,240,223,0.45);
+    text-align: center;
+    padding: 40px 24px;
+    font-size: 12px;
+    line-height: 2;
+  }
+  .footer-logo {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+  .footer-logo em { font-style: normal; color: var(--g3); }
+  footer a { color: var(--g3); text-decoration: none; }
+  .footer-emergency {
+    margin-top: 14px;
+    font-size: 11px;
+    color: rgba(91,184,122,0.5);
+  }
+  .footer-emergency strong { color: var(--g3); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="logo">Merg<em>LaMunte</em></a>
+  <span class="nav-tag">merglamunte.ro</span>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">⛰ Carpații României</div>
+    <h1>Unde mergi<br><em>în weekend?</em></h1>
+    <p class="hero-sub">Unelte gratuite pentru drumeții montane — de la alegerea traseului până la siguranța pe munte.</p>
+  </div>
+</div>
+
+<!-- CARDS -->
+<div class="cards-section">
+  <div class="cards-grid">
+
+    <!-- 1. Nu știu unde vreau să merg -->
+    <a class="card card-green" href="generator.html">
+      <span class="card-icon">🗺️</span>
+      <div class="card-question">Nu știu unde vreau să merg</div>
+      <div class="card-title"><em>Generator</em> de trasee</div>
+      <div class="card-desc">Filtrează trasee după orașul tău de plecare, timpul cu mașina, dificultate și număr de zile.</div>
+      <div class="card-foot">
+        <span class="card-tag tag-green">Trasee</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- 2. Știu unde vreau să merg -->
+    <a class="card card-teal" href="https://merglamunte2.vercel.app" target="_blank" rel="noopener">
+      <span class="card-icon">🌤️</span>
+      <div class="card-question">Știu unde vreau să merg</div>
+      <div class="card-title">Arată-mi <em>vremea</em></div>
+      <div class="card-desc">Date meteo pentru o dată și locație specifică — temperaturi, precipitații și condiții montane.</div>
+      <div class="card-foot">
+        <span class="card-tag tag-teal">Meteo</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- 3. Nu am cu cine să merg -->
+    <div class="card card-muted card-disabled">
+      <span class="coming-soon">În curând</span>
+      <span class="card-icon">🧑‍🤝‍🧑</span>
+      <div class="card-question">Nu am cu cine să merg</div>
+      <div class="card-title">Găsește-ți <em>grup</em></div>
+      <div class="card-desc">Conectează-te cu alți montaniarzi din zona ta, alătură-te unui grup sau organizează o ieșire.</div>
+      <div class="card-foot">
+        <span class="card-tag tag-muted">Aplicație</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </div>
+
+    <!-- 4. Calculator risc avalanșă -->
+    <a class="card card-blue" href="avalansa.html">
+      <span class="card-icon">⚠️</span>
+      <div class="card-question">Mă duc iarna pe munte</div>
+      <div class="card-title">Calculator <em>risc avalanșă</em></div>
+      <div class="card-desc">Autoevaluează riscul local pe traseul tău, bazat pe metodologia oficială Salvamont România.</div>
+      <div class="card-foot">
+        <span class="card-tag tag-blue">Siguranță</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Merg<em>LaMunte</em></div>
+  <p>Unelte gratuite pentru drumeții montane în România</p>
+  <p>
+    <a href="https://github.com/SIG212/scraper-trasee" target="_blank">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="/cdn-cgi/l/email-protection#aac9c5c4decbc9deeac7cfd8cdc6cbc7dfc4decf84d8c5">Contact</a>
+  </p>
+  <div class="footer-emergency">
+    Urgențe montane: <strong>Salvamont 0725 826 668<
