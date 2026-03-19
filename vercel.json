@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/vreme-munte/(.*)", "destination": "/vreme-munte/$1" },
-    { "source": "/vreme-munte", "destination": "/vreme-munte/index.html" }
+    { "source": "/vreme-munte/((?!assets/).*)", "destination": "/vreme-munte/index.html" },
+    { "source": "/generator.html", "destination": "/generator.html" },
+    { "source": "/autoevaluator-avalansa.html", "destination": "/autoevaluator-avalansa.html" }
   ]
 }
